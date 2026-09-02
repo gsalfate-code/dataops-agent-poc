@@ -1,0 +1,24 @@
+# Python and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Generated data and evidence
+*.duckdb
+*.duckdb.wal
+data/generated/
+evidence/generated/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
