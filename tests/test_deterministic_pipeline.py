@@ -1,4 +1,5 @@
 import tempfile
+from datetime import UTC, datetime
 
 import duckdb
 import pytest
@@ -71,11 +72,15 @@ def test_repeated_run_preserves_created_at(tmp_path, monkeypatch) -> None:
     db_path = tmp_path / "created-at.duckdb"
     monkeypatch.setenv("DATAOPS_DB_PATH", str(db_path))
 
+    before = datetime.now(UTC).replace(tzinfo=None)
     run_pipeline()
+    after = datetime.now(UTC).replace(tzinfo=None)
     with duckdb.connect(str(db_path)) as conn:
         first_created_at = conn.execute(
             "SELECT created_at FROM metadata_runs"
         ).fetchone()[0]
+
+    assert before <= first_created_at <= after
 
     run_pipeline()
     with duckdb.connect(str(db_path)) as conn:

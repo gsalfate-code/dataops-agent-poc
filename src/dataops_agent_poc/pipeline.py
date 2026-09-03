@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import json
 import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -272,6 +273,9 @@ def _persist_run_results(
         if published_count == PUBLISHED_COUNT and rejected_count == REJECTED_COUNT
         else "REJECTED"
     )
+    existing_created_at = conn.execute(
+        "SELECT created_at FROM metadata_runs WHERE run_id = ?", [run_id]
+    ).fetchone()
 
     metadata = {
         "run_id": run_id,
@@ -284,11 +288,10 @@ def _persist_run_results(
         "raw_hash": raw_hash,
         "rule_counts": rule_counts,
         "created_at": (
-            conn.execute(
-                "SELECT created_at FROM metadata_runs WHERE run_id = ?", [run_id]
-            ).fetchone()
-            or ("2026-09-02T00:00:00",)
-        )[0],
+            existing_created_at[0]
+            if existing_created_at is not None
+            else datetime.now(UTC).replace(tzinfo=None)
+        ),
     }
 
     conn.execute(

@@ -22,6 +22,11 @@ This layering keeps the pipeline inspectable: each step can be checked independe
 
 The pipeline is deterministic because the generator depends on a fixed seed and period. For the same inputs, it produces the same values, counts, and hashes.
 
+Determinism applies to the business result, not to operational metadata: `raw_hash` represents
+only the deterministic RAW rows, while `created_at` records the real UTC time when that
+`run_id` was first created. A replay preserves the original `created_at` without putting it in
+the RAW hash.
+
 ### Idempotence
 
 Replay behavior is controlled by deleting existing stage, quarantine, and mart tables before reinsertions and by reusing the same run identity. The same run must not create duplicates or change the business result.
