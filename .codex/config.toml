@@ -1,0 +1,8 @@
+[mcp_servers.dataops_agent]
+command = "uv"
+args = ["run", "python", "-m", "dataops_agent_poc.mcp_server"]
+env = { DATAOPS_DB_PATH = "data/generated/warehouse.duckdb", DATAOPS_AUDIT_PATH = "evidence/generated/mcp_audit.jsonl" }
+enabled_tools = ["get_payment_batch", "reconcile_payment_layers", "get_rejection_reasons"]
+default_tools_approval_mode = "writes"
+startup_timeout_sec = 10
+ tool_timeout_sec = 30

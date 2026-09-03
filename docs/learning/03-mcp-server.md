@@ -70,3 +70,23 @@ uv run pytest
 
 El test de integración inicia el servidor real y realiza una llamada mediante MCP
 STDIO, además de comprobar los contratos de seguridad y auditoría.
+
+## Registro en Codex
+
+Implementar un servidor significa escribir su código, sus consultas y sus contratos MCP.
+Registrarlo significa indicar a un cliente cómo iniciarlo y qué herramientas puede descubrir.
+`.codex/config.toml` realiza este segundo trabajo para este proyecto: define el comando STDIO,
+las variables de entorno con rutas relativas, los timeouts, el modo de aprobación y la lista
+cerrada de herramientas habilitadas. No contiene credenciales ni cambia el pipeline.
+
+Después de crear o modificar esta configuración, reinicia Codex para que vuelva a leerla y
+descubra `dataops_agent`. Verifica el registro solicitando la lista de herramientas MCP o
+ejecutando la prueba de integración:
+
+```bash
+uv run pytest tests/test_mcp_server.py::test_real_mcp_stdio_call_returns_structured_evidence
+```
+
+La lista esperada contiene exactamente `get_payment_batch`, `reconcile_payment_layers` y
+`get_rejection_reasons`. Las anotaciones de solo lectura permiten el modo
+`default_tools_approval_mode = "writes"` sin pedir aprobación de escritura para estas consultas.
