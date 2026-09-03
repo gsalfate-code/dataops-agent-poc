@@ -39,6 +39,10 @@ The valid person reference is a deterministic fictitious `person_master` table c
 IDs 1 through 1,000. `MISSING_PERSON` is determined by actual absence from that table, rather
 than by a numeric threshold.
 
+Payment amounts use exact `DECIMAL(18,2)` arithmetic. `DOUBLE` is a binary floating-point type,
+so values such as cents cannot always be represented exactly; using it for money can introduce
+rounding errors in comparisons, totals, and persisted values.
+
 STAGING stores all 10,000 classified rows. Valid rows have status `VALID` and null rejection
 fields; rejected rows have status `REJECTED`, a rule code, and a reason. MART and QUARANTINE are
 SQL derivations from STAGING, producing 9,880 and 120 rows respectively.

@@ -15,6 +15,7 @@ from dataops_agent_poc.generation import (
     INVALID_AMOUNT_COUNT,
     INVALID_MISSING_PERSON_COUNT,
     compute_raw_hash,
+    format_amount,
     generate_raw_rows,
 )
 from dataops_agent_poc.quality import classify_rows
@@ -42,7 +43,7 @@ def _init_schema(conn: duckdb.DuckDBPyConnection) -> None:
             payment_id VARCHAR PRIMARY KEY,
             period VARCHAR,
             person_id BIGINT,
-            amount DOUBLE,
+            amount DECIMAL(18,2),
             source_row_id BIGINT
         )
         """
@@ -53,7 +54,7 @@ def _init_schema(conn: duckdb.DuckDBPyConnection) -> None:
             payment_id VARCHAR PRIMARY KEY,
             period VARCHAR,
             person_id BIGINT,
-            amount DOUBLE,
+            amount DECIMAL(18,2),
             source_row_id BIGINT,
             validation_status VARCHAR,
             rejection_code VARCHAR,
@@ -67,7 +68,7 @@ def _init_schema(conn: duckdb.DuckDBPyConnection) -> None:
             payment_id VARCHAR PRIMARY KEY,
             period VARCHAR,
             person_id BIGINT,
-            amount DOUBLE,
+            amount DECIMAL(18,2),
             source_row_id BIGINT,
             rejection_code VARCHAR,
             rejection_reason VARCHAR,
@@ -81,7 +82,7 @@ def _init_schema(conn: duckdb.DuckDBPyConnection) -> None:
             payment_id VARCHAR PRIMARY KEY,
             period VARCHAR,
             person_id BIGINT,
-            amount DOUBLE,
+            amount DECIMAL(18,2),
             source_row_id BIGINT,
             run_id VARCHAR
         )
@@ -164,7 +165,7 @@ def _persist_raw_if_needed(
                     row["payment_id"],
                     row["period"],
                     row["person_id"],
-                    row["amount"],
+                    format_amount(row["amount"]),
                     row["source_row_id"],
                 )
                 for row in raw_rows
@@ -200,7 +201,7 @@ def _persist_raw_if_needed(
                 "payment_id": row[0],
                 "period": row[1],
                 "person_id": row[2],
-                "amount": float(row[3]),
+                "amount": row[3],
                 "source_row_id": row[4],
             }
             for row in current_rows

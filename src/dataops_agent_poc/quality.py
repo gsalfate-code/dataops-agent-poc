@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Collection, Mapping
+from decimal import Decimal
 from typing import Any, NamedTuple
 
 MISSING_PERSON = "MISSING_PERSON"
@@ -21,7 +22,7 @@ def is_missing_person(row: Mapping[str, Any], valid_person_ids: Collection[int])
 
 def is_invalid_amount(row: Mapping[str, Any], valid_person_ids: Collection[int]) -> bool:
     del valid_person_ids
-    return float(row["amount"]) <= 0
+    return row["amount"] <= Decimal("0.00")
 
 
 # Order is the rule priority: the first matching rule determines the rejection.

@@ -1,12 +1,13 @@
 import tempfile
 from datetime import UTC, datetime
+from decimal import Decimal
 
 import duckdb
 import pytest
 
 from dataops_agent_poc import pipeline
 from dataops_agent_poc.config import get_config
-from dataops_agent_poc.generation import generate_raw_rows
+from dataops_agent_poc.generation import compute_raw_hash, generate_raw_rows
 from dataops_agent_poc.pipeline import run_pipeline
 from dataops_agent_poc.quality import classify_rows
 
@@ -46,6 +47,55 @@ def test_pipeline_generates_expected_business_output(tmp_path, monkeypatch) -> N
     assert summary["rule_counts"]["INVALID_AMOUNT"] == 5
     assert summary["status"] == "PUBLISHED_WITH_REJECTIONS"
     assert summary["raw_hash"]
+
+
+def test_payment_amounts_use_decimal_contract(tmp_path, monkeypatch) -> None:
+    db_path = tmp_path / "decimal-contract.duckdb"
+    monkeypatch.setenv("DATAOPS_DB_PATH", str(db_path))
+
+    run_pipeline()
+    with duckdb.connect(str(db_path)) as conn:
+        for table_name in (
+            "raw_payments",
+            "staging_payments",
+            "quarantine_payments",
+            "mart_payments",
+        ):
+            amount_type = conn.execute(
+                """
+                SELECT data_type
+                FROM information_schema.columns
+                WHERE table_name = ? AND column_name = 'amount'
+                """,
+                [table_name],
+            ).fetchone()[0]
+            assert amount_type == "DECIMAL(18,2)"
+
+
+def test_payment_amount_round_trip_is_exact() -> None:
+    amount = Decimal("1234.56")
+    rows = [
+        {
+            "payment_id": "pay-1",
+            "period": "2026-09",
+            "person_id": 1,
+            "amount": amount,
+            "source_row_id": 1,
+        }
+    ]
+
+    conn = duckdb.connect(":memory:")
+    try:
+        conn.execute("CREATE TABLE payments (amount DECIMAL(18,2))")
+        conn.execute("INSERT INTO payments VALUES (?)", [amount])
+        persisted_amount = conn.execute("SELECT amount FROM payments").fetchone()[0]
+    finally:
+        conn.close()
+
+    assert persisted_amount == amount
+    assert compute_raw_hash(rows) == compute_raw_hash(
+        [{**rows[0], "amount": persisted_amount}]
+    )
 
 
 def test_second_run_is_idempotent_and_raw_is_immutable(tmp_path, monkeypatch) -> None:
