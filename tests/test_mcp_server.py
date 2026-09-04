@@ -130,15 +130,61 @@ def test_real_mcp_stdio_call_returns_structured_evidence(tmp_path, monkeypatch) 
         env=environment,
     )
 
-    async def call_tool() -> dict:
+    async def investigate() -> tuple[set[str], dict, dict, dict]:
         async with stdio_client(server_parameters) as streams:
             async with ClientSession(*streams) as session:
                 await session.initialize()
-                result = await session.call_tool("get_payment_batch", {"period": "2026-09"})
-                assert result.isError is False
-                return result.structuredContent
+                tools = await session.list_tools()
+                tool_names = {tool.name for tool in tools.tools}
+                batch_result = await session.call_tool(
+                    "get_payment_batch", {"period": "2026-09"}
+                )
+                reconciliation_result = await session.call_tool(
+                    "reconcile_payment_layers", {"period": "2026-09"}
+                )
+                rejection_result = await session.call_tool(
+                    "get_rejection_reasons", {"period": "2026-09"}
+                )
+                results = (batch_result, reconciliation_result, rejection_result)
+                assert all(result.isError is False for result in results)
+                return (
+                    tool_names,
+                    batch_result.structuredContent,
+                    reconciliation_result.structuredContent,
+                    rejection_result.structuredContent,
+                )
 
-    response = anyio.run(call_tool)
-    assert response["expected_count"] == 10_000
-    assert response["published_count"] == 9_880
-    assert response["rejected_count"] == 120
+    try:
+        tool_names, batch, reconciliation, rejections = anyio.run(investigate)
+        assert tool_names == {
+            "get_payment_batch",
+            "reconcile_payment_layers",
+            "get_rejection_reasons",
+        }
+        assert batch["expected_count"] == 10_000
+        assert batch["published_count"] == 9_880
+        assert batch["rejected_count"] == 120
+        assert reconciliation["counts"] == {
+            "raw": 10_000,
+            "staging": 10_000,
+            "mart": 9_880,
+            "quarantine": 120,
+        }
+        assert reconciliation["first_difference"] is None
+        assert rejections["total_rejected"] == 120
+        assert rejections["reasons"] == [
+            {"code": "INVALID_AMOUNT", "reason": "invalid payment amount", "count": 5},
+            {"code": "MISSING_PERSON", "reason": "missing person reference", "count": 115},
+        ]
+
+        events = [json.loads(line) for line in audit_path.read_text().splitlines()]
+        assert [event["tool"] for event in events] == [
+            "get_payment_batch",
+            "reconcile_payment_layers",
+            "get_rejection_reasons",
+        ]
+        assert all(event["result"] == "ok" for event in events)
+    finally:
+        db_path.unlink(missing_ok=True)
+
+    assert not db_path.exists()

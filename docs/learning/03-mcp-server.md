@@ -68,8 +68,9 @@ uv run ruff check .
 uv run pytest
 ```
 
-El test de integración inicia el servidor real y realiza una llamada mediante MCP
-STDIO, además de comprobar los contratos de seguridad y auditoría.
+El test de integración inicia el servidor real, lista exactamente las tres herramientas y las
+invoca mediante MCP STDIO en el orden de investigación, además de comprobar conteos, causas,
+limpieza de la base temporal y auditoría.
 
 ## Registro en Codex
 
@@ -84,6 +85,7 @@ descubra `dataops_agent`. Verifica el registro solicitando la lista de herramien
 ejecutando la prueba de integración:
 
 ```bash
+uv run pytest tests/test_mcp_server.py::test_real_mcp_stdio_call_returns_structured_evidence
 uv run pytest tests/test_mcp_server.py::test_real_mcp_stdio_call_returns_structured_evidence
 ```
 

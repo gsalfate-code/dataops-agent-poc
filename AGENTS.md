@@ -53,3 +53,11 @@ uv run pytest
 ```
 
 Do not claim completion when checks fail. Report the failure and its cause clearly.
+
+## Preflight and stop-loss
+
+- Before implementing an integration, identify the target client, version, host, filesystem, authentication, and network limits.
+- Build a minimal walking skeleton first, then distinguish unit, protocol, integration, and real E2E tests.
+- Do not declare an integration complete without an invocation from its target client; verify commands in the environment where they will run and explain each command's execution location.
+- After two failures based on the same hypothesis, stop and reevaluate; do not accumulate speculative workarounds.
+- Never request secrets or authentication codes. Prefer the simplest architecture compatible with the educational goal.

@@ -20,6 +20,11 @@ support the conclusion with evidence, and propose a safe replay.
 
 ## Current checkpoint
 
+The repository contains a deterministic DuckDB pipeline, quality rules, a read-only MCP server,
+the repository-scoped investigation skill, and an automated MCP STDIO walking skeleton. The
+pipeline and protocol checks are reproducible locally; an authenticated Codex E2E invocation is
+not claimed as verified. See [`docs/STATUS.md`](docs/STATUS.md) for the evidence matrix.
+
 The repository contains only the reproducible Python development environment and project rules.
 The data pipeline, MCP server, and skill will be added as separate, observable increments.
 
