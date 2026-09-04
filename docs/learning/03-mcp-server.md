@@ -86,7 +86,6 @@ ejecutando la prueba de integración:
 
 ```bash
 uv run pytest tests/test_mcp_server.py::test_real_mcp_stdio_call_returns_structured_evidence
-uv run pytest tests/test_mcp_server.py::test_real_mcp_stdio_call_returns_structured_evidence
 ```
 
 La lista esperada contiene exactamente `get_payment_batch`, `reconcile_payment_layers` y

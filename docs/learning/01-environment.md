@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This is the first phase of the project: establish a repeatable local development environment for an educational Data Engineering reliability agent. The goal is not to build the pipeline yet, but to make sure the workspace can be rebuilt consistently in GitHub Codespaces and locally with the same Python version, dependency set, and validation commands.
+This is the first phase of the project: establish a repeatable local development environment for an educational Data Engineering reliability agent. The environment supports the deterministic pipeline, read-only MCP server, investigation skill, and their local validation commands.
 
 ## What "bootstrap" means
 
@@ -14,7 +14,7 @@ This is the first phase of the project: establish a repeatable local development
 - the developer environment variables,
 - the ignore rules for generated artifacts.
 
-For this repository, the bootstrap is intentionally minimal and explicit. It creates a stable baseline before the real work begins: deterministic data generation, DuckDB persistence, read-only MCP tools, and investigation workflow.
+For this repository, the bootstrap is intentionally minimal and explicit. It provides a stable base for deterministic data generation, DuckDB persistence, read-only MCP tools, and the investigation workflow.
 
 ## Why GitHub Codespaces improves reproducibility
 
@@ -56,7 +56,7 @@ This file keeps local and generated artifacts out of version control. It prevent
 
 ### 1. Keep the bootstrap intentionally narrow
 
-The environment phase should only establish the base. It should not start the pipeline, MCP server, or investigation skill. This keeps responsibilities separated and makes failures easier to diagnose.
+The environment phase establishes the base while keeping pipeline, MCP server, and investigation skill responsibilities separate. This makes failures easier to diagnose.
 
 ### 2. Keep the repo deterministic
 
@@ -104,4 +104,4 @@ The repository should be in a clean bootstrap state:
 - generated data ignored,
 - lint and tests runnable.
 
-No pipeline logic, no MCP surface, no investigation skill, and no CI behavior are introduced here yet. This phase is intentionally limited to the environment itself.
+The pipeline, MCP surface, and investigation skill are documented in their own learning notes. This phase remains intentionally limited to the environment itself.
